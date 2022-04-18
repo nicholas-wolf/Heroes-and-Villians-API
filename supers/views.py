@@ -5,6 +5,7 @@ from rest_framework import status
 from . serializers import SupersSerializer
 from . models import Supers
 
+
 # Create your views here.
 
 @api_view(['GET','POST'])
@@ -12,9 +13,20 @@ def supers_table(request):
     
     
     if request.method == 'GET':
+        super_type_param = request.query_params.get('type')
+        sort_param = request.query_params.get('sort')
+
         supers = Supers.objects.all()
+
+        if super_type_param:
+            supers = supers.filter(super_type__type=super_type_param)
+
+        if sort_param:
+            supers = supers.order_by(sort_param)
+
+
         serializer = SupersSerializer(supers, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
 
     elif request.method == 'POST':
@@ -39,20 +51,3 @@ def supers_detail(request, pk):
         super.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-@api_view(['GET'])
-def supers_list(request):
-
-    super_type_param = request.query_params.get('super_type')
-    sort_param = request.query_params.get('sort')
-
-    supers = Supers.objects.all()
-
-    if super_type_param:
-        supers = supers.filter(super_type__name=super_type_param)
-
-    if sort_param:
-        supers = supers.order_by(sort_param)
-
-
-    serializer = SupersSerializer(supers, many=True)
-    return Response(serializer.data)                
